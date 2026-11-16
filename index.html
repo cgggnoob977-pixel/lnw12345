@@ -1,0 +1,698 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7fb">
+  <title>ห้องสมุด Insight — ระบบวิเคราะห์การยืม-คืน</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17243b;
+      --muted: #78859a;
+      --line: #e8edf4;
+      --paper: #fff;
+      --canvas: #f5f7fb;
+      --navy: #172c4e;
+      --blue: #4775e8;
+      --blue-soft: #edf2ff;
+      --teal: #159b8a;
+      --teal-soft: #e9f7f4;
+      --amber: #d78a28;
+      --amber-soft: #fff5e7;
+      --red: #d65359;
+      --red-soft: #fff0ef;
+      --shadow: 0 8px 26px rgba(28, 45, 76, .045);
+      font-family: "Leelawadee UI", Tahoma, "Segoe UI", sans-serif;
+      font-synthesis: none;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); background: var(--canvas); font-size: 14px; }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    .hidden { display: none !important; }
+    .login-screen { min-height: 100vh; display: grid; grid-template-columns: minmax(320px, .94fr) 1.06fr; background: #fff; }
+    .login-panel { display: flex; align-items: center; justify-content: center; padding: 48px 30px; }
+    .login-box { width: min(390px, 100%); }
+    .brand-mark { width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; color: #fff; background: var(--blue); box-shadow: 0 8px 18px #4775e83d; }
+    .brand-mark svg { width: 23px; height: 23px; }
+    .login-box h1 { margin: 32px 0 7px; font-size: 27px; letter-spacing: -.5px; }
+    .login-box .sub { margin: 0 0 30px; color: var(--muted); line-height: 1.8; }
+    .field { display: grid; gap: 8px; margin: 17px 0; }
+    .field label { color: #44516a; font-size: 13px; font-weight: 700; }
+    .field input, .filter-control input, .filter-control select { min-width: 0; width: 100%; height: 42px; padding: 0 12px; color: var(--ink); border: 1px solid #dfe5ee; border-radius: 9px; background: #fff; outline: none; }
+    input:focus, select:focus { border-color: #7999ee !important; box-shadow: 0 0 0 3px #4775e81c; }
+    .password-wrap { position: relative; }
+    .password-wrap input { padding-right: 68px; }
+    .show-password { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); border: 0; color: var(--blue); background: transparent; font-size: 12px; }
+    .primary-btn { min-height: 43px; padding: 0 17px; border: 0; border-radius: 9px; color: #fff; background: var(--blue); font-weight: 700; transition: .18s ease; }
+    .primary-btn:hover { background: #3564d8; transform: translateY(-1px); }
+    .login-submit { width: 100%; margin-top: 8px; }
+    .login-error { min-height: 20px; margin: 8px 0 0; color: var(--red); font-size: 12px; }
+    .login-note { color: #8b97a9; font-size: 12px; margin-top: 22px; }
+    .login-art { position: relative; overflow: hidden; min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(145deg, #162c4d, #203e6b 60%, #2f568d); }
+    .login-art:before, .login-art:after { position: absolute; content: ""; border: 1px solid #ffffff12; border-radius: 50%; }
+    .login-art:before { width: 610px; height: 610px; right: -210px; top: -225px; }
+    .login-art:after { width: 440px; height: 440px; left: -175px; bottom: -180px; }
+    .art-content { position: relative; width: min(480px, 85%); color: #fff; z-index: 1; }
+    .art-label { color: #b6c8e7; font-size: 12px; letter-spacing: 1.4px; text-transform: uppercase; }
+    .art-content h2 { margin: 18px 0 13px; font-size: clamp(30px, 3.2vw, 43px); line-height: 1.35; letter-spacing: -.7px; }
+    .art-content p { max-width: 390px; color: #c5d2e7; line-height: 1.9; }
+    .art-visual { position: relative; height: 180px; margin-top: 38px; border: 1px solid #ffffff23; border-radius: 17px; background: #ffffff0c; overflow: hidden; }
+    .art-visual svg { width: 100%; height: 100%; }
+    .app-shell { display: grid; grid-template-columns: 248px minmax(0, 1fr); height: 100vh; min-height: 620px; overflow: hidden; }
+    .sidebar { display: flex; flex-direction: column; padding: 23px 15px 16px; background: var(--navy); color: #d9e3f2; }
+    .side-brand { display: flex; align-items: center; gap: 11px; padding: 0 8px 25px; }
+    .side-brand .brand-mark { width: 38px; height: 38px; border-radius: 12px; box-shadow: none; }
+    .brand-name { color: #fff; font-size: 15px; font-weight: 700; }
+    .brand-caption { margin-top: 2px; color: #98abc7; font-size: 10px; }
+    .nav-caption { padding: 9px 11px 8px; color: #8ca0bd; font-size: 10px; font-weight: 700; letter-spacing: .8px; }
+    .nav-list { display: grid; gap: 4px; }
+    .nav-item { width: 100%; display: flex; align-items: center; gap: 11px; min-height: 41px; padding: 0 11px; border: 0; border-radius: 8px; color: #bdcbe0; text-align: left; background: transparent; transition: .16s ease; }
+    .nav-item:hover { color: #fff; background: #ffffff10; }
+    .nav-item.active { color: #fff; background: #ffffff19; box-shadow: inset 3px 0 #83a5ff; }
+    .nav-item svg { width: 17px; height: 17px; flex: 0 0 auto; opacity: .9; }
+    .side-bottom { margin-top: auto; }
+    .data-stamp { margin: 14px 5px 17px; padding: 12px 11px; border: 1px solid #ffffff18; border-radius: 10px; background: #ffffff08; }
+    .data-stamp .stamp-title { color: #fff; font-size: 11px; font-weight: 700; }
+    .data-stamp .stamp-sub { margin-top: 5px; color: #9fb0c9; font-size: 10px; line-height: 1.7; }
+    .side-user { display: flex; align-items: center; gap: 9px; padding: 13px 6px 0; border-top: 1px solid #ffffff19; }
+    .avatar { display: grid; place-items: center; width: 32px; height: 32px; flex: 0 0 auto; border-radius: 50%; color: #dbe5ff; background: #36547b; font-size: 12px; font-weight: 700; }
+    .user-name { overflow: hidden; color: #fff; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+    .user-role { margin-top: 3px; color: #94a8c3; font-size: 10px; }
+    .logout { margin-left: auto; padding: 6px; border: 0; color: #a9bad3; background: transparent; }
+    .logout:hover { color: #fff; }
+    .main-area { min-width: 0; display: flex; flex-direction: column; overflow: hidden; }
+    .topbar { flex: 0 0 auto; height: 69px; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 0 30px; border-bottom: 1px solid var(--line); background: #fff; }
+    .breadcrumb { color: var(--muted); font-size: 12px; }
+    .breadcrumb strong { margin-left: 8px; color: var(--ink); font-size: 13px; }
+    .top-meta { display: flex; align-items: center; gap: 8px; color: #6e7c91; font-size: 11px; }
+    .live-dot { width: 7px; height: 7px; border-radius: 50%; background: #22aa83; box-shadow: 0 0 0 3px #22aa831c; }
+    .content-scroll { flex: 1; overflow: auto; padding: 25px 30px 34px; scrollbar-color: #c9d2df transparent; scrollbar-width: thin; }
+    .page-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 20px; }
+    .page-heading h1 { margin: 0; font-size: 22px; letter-spacing: -.35px; }
+    .page-heading p { margin: 6px 0 0; color: var(--muted); font-size: 12px; line-height: 1.7; }
+    .heading-actions { display: flex; gap: 8px; }
+    .filter-bar { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; margin: 0 0 19px; padding: 13px; border: 1px solid var(--line); border-radius: 11px; background: #fff; box-shadow: var(--shadow); }
+    .filter-control { display: grid; gap: 5px; min-width: 128px; }
+    .filter-control label { color: #718097; font-size: 10px; font-weight: 700; }
+    .filter-control input, .filter-control select { height: 34px; padding: 0 9px; border-color: #e4e9f0; border-radius: 7px; font-size: 11px; }
+    .filter-control.search { flex: 1 1 190px; min-width: 190px; }
+    .filter-control.search input { padding-left: 30px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='%23808da1' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-4-4'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: 9px center; }
+    .clear-btn { height: 34px; padding: 0 11px; border: 1px solid #e4e9f0; border-radius: 7px; color: #596981; background: #fff; font-size: 11px; }
+    .clear-btn:hover { color: var(--blue); border-color: #bac9ee; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(5, minmax(130px,1fr)); gap: 13px; margin-bottom: 16px; }
+    .card { border: 1px solid var(--line); border-radius: 12px; background: var(--paper); box-shadow: var(--shadow); }
+    .kpi { min-height: 110px; padding: 16px 16px 13px; }
+    .kpi-top { display: flex; align-items: center; justify-content: space-between; color: #748198; font-size: 11px; }
+    .kpi-icon { display: grid; place-items: center; width: 29px; height: 29px; border-radius: 8px; color: var(--blue); background: var(--blue-soft); }
+    .kpi-icon.teal { color: var(--teal); background: var(--teal-soft); }
+    .kpi-icon.amber { color: var(--amber); background: var(--amber-soft); }
+    .kpi-icon.red { color: var(--red); background: var(--red-soft); }
+    .kpi-icon svg { width: 16px; height: 16px; }
+    .kpi-value { margin-top: 8px; color: #1c2b43; font-size: 25px; font-weight: 700; letter-spacing: -.6px; }
+    .kpi-foot { margin-top: 3px; color: #98a2b2; font-size: 10px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+    .chart-card { min-width: 0; padding: 17px 18px 15px; }
+    .card-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 15px; }
+    .card-heading h2 { margin: 0; font-size: 13px; }
+    .card-heading p { margin: 5px 0 0; color: #8c98aa; font-size: 10px; }
+    .subtle-tag { padding: 4px 7px; border-radius: 5px; color: #68778e; background: #f3f5f8; font-size: 9px; white-space: nowrap; }
+    .chart-area { min-height: 185px; }
+    .chart-area svg { display: block; width: 100%; height: 190px; overflow: visible; }
+    .bar-chart { display: grid; gap: 11px; padding: 2px 0 4px; }
+    .bar-row { display: grid; grid-template-columns: minmax(75px, 1.2fr) 3fr 31px; align-items: center; gap: 9px; color: #67758b; font-size: 10px; }
+    .bar-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .bar-track { height: 8px; overflow: hidden; border-radius: 20px; background: #f0f3f8; }
+    .bar-fill { height: 100%; border-radius: inherit; background: #6d8ff0; }
+    .bar-count { color: #4c5c74; text-align: right; font-weight: 700; }
+    .status-legend { display: grid; gap: 10px; padding-top: 5px; }
+    .legend-row { display: grid; grid-template-columns: 10px 1fr auto; align-items: center; gap: 8px; color: #647289; font-size: 11px; }
+    .legend-dot { width: 8px; height: 8px; border-radius: 3px; }
+    .legend-row strong { color: #34425a; font-size: 11px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+    .stat-cell { padding: 10px 8px; border-radius: 8px; background: #f7f9fc; text-align: center; }
+    .stat-cell strong { display: block; font-size: 16px; }
+    .stat-cell span { display: block; margin-top: 4px; color: #8793a6; font-size: 9px; }
+    .insight-list { display: grid; gap: 10px; }
+    .insight-item { display: flex; align-items: flex-start; gap: 10px; padding: 11px 12px; border: 1px solid #edf0f5; border-radius: 9px; background: #fff; }
+    .insight-number { display: grid; place-items: center; width: 23px; height: 23px; flex: 0 0 auto; border-radius: 7px; color: #446ddb; background: #edf2ff; font-size: 10px; font-weight: 700; }
+    .insight-item p { margin: 0; color: #57657b; font-size: 11px; line-height: 1.75; }
+    .insight-item strong { color: #273750; }
+    .table-card { overflow: hidden; }
+    .table-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line); }
+    .table-head h2 { margin: 0; font-size: 13px; }
+    .table-head p { margin: 5px 0 0; color: #8793a6; font-size: 10px; }
+    .table-wrap { width: 100%; overflow: auto; }
+    table { width: 100%; border-collapse: collapse; white-space: nowrap; }
+    th { padding: 10px 13px; color: #79869a; background: #fafbfd; border-bottom: 1px solid var(--line); text-align: left; font-size: 10px; font-weight: 700; }
+    th[data-sort] { cursor: pointer; }
+    th[data-sort]:hover { color: var(--blue); }
+    td { padding: 10px 13px; color: #4c5b72; border-bottom: 1px solid #f0f2f6; font-size: 10px; }
+    tbody tr:hover { background: #fbfcfe; }
+    .id-code { color: #4f6fb6; font-weight: 700; }
+    .status-pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 7px; border-radius: 20px; font-size: 9px; }
+    .status-pill:before { width: 5px; height: 5px; border-radius: 50%; background: currentColor; content: ""; }
+    .pill-ok { color: #16836f; background: #eaf7f3; }
+    .pill-late { color: #b86324; background: #fff3e7; }
+    .pill-overdue { color: #c34850; background: #fff0ef; }
+    .pill-active { color: #5574cc; background: #edf2ff; }
+    .pill-unknown { color: #768195; background: #f1f3f6; }
+    .table-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 15px; color: #7d899a; font-size: 10px; }
+    .pager { display: flex; gap: 5px; }
+    .pager button { min-width: 29px; height: 27px; border: 1px solid #e4e9f0; border-radius: 6px; color: #56647a; background: #fff; font-size: 10px; }
+    .pager button:disabled { opacity: .45; cursor: default; }
+    .pager button.current { color: #fff; border-color: var(--blue); background: var(--blue); }
+    .notice { margin-bottom: 14px; padding: 11px 13px; border: 1px solid #f1dfbf; border-radius: 9px; color: #806332; background: #fff9ee; font-size: 11px; line-height: 1.7; }
+    .quality-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 14px; }
+    .quality-stat { padding: 16px; }
+    .quality-stat span { display: block; color: #8290a4; font-size: 10px; }
+    .quality-stat strong { display: block; margin-top: 8px; font-size: 21px; }
+    .quality-stat small { color: #98a2b2; font-size: 10px; }
+    .quality-detail { display: grid; gap: 10px; padding: 14px 16px; }
+    .quality-row { display: grid; grid-template-columns: 74px 1fr 1fr; gap: 12px; padding: 11px 0; border-bottom: 1px solid #edf0f4; font-size: 11px; }
+    .quality-row:last-child { border-bottom: 0; }
+    .quality-row p { margin: 3px 0 0; color: #69768b; line-height: 1.65; }
+    .quality-row strong { color: #34425a; }
+    .severity { display: inline-block; padding: 4px 7px; border-radius: 5px; color: #b36b25; background: #fff4e6; font-size: 9px; }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+    .info-card { padding: 17px; }
+    .info-card h2 { margin: 0 0 12px; font-size: 13px; }
+    .info-card p, .info-card li { color: #65738a; font-size: 11px; line-height: 1.8; }
+    .info-card ul { margin: 0; padding-left: 18px; }
+    .dictionary th, .dictionary td { white-space: normal; min-width: 120px; }
+    .empty-state { padding: 42px 15px; text-align: center; color: #8b97a9; font-size: 12px; }
+    .empty-state strong { display: block; margin-bottom: 6px; color: #526179; font-size: 13px; }
+    .loading-state { padding: 55px 20px; text-align: center; color: #738198; line-height: 1.8; }
+    .spinner { width: 24px; height: 24px; margin: 0 auto 10px; border: 2px solid #dce5f6; border-top-color: var(--blue); border-radius: 50%; animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .mobile-menu { display: none; padding: 6px; border: 0; color: #53627a; background: transparent; }
+    @media (max-width: 1120px) {
+      .app-shell { grid-template-columns: 215px minmax(0,1fr); }
+      .content-scroll { padding-right: 20px; padding-left: 20px; }
+      .topbar { padding: 0 20px; }
+      .kpi-grid { grid-template-columns: repeat(3, minmax(130px,1fr)); }
+    }
+    @media (max-width: 760px) {
+      .login-screen { grid-template-columns: 1fr; }
+      .login-art { display: none; }
+      .login-panel { min-height: 100vh; }
+      .app-shell { display: block; }
+      .sidebar { position: fixed; z-index: 20; inset: 0 auto 0 0; width: 258px; transform: translateX(-100%); transition: transform .2s ease; box-shadow: 10px 0 35px #0e1e3833; }
+      .sidebar.open { transform: translateX(0); }
+      .main-area { height: 100vh; }
+      .topbar { height: 58px; padding: 0 13px; }
+      .mobile-menu { display: block; }
+      .breadcrumb { display: flex; align-items: center; gap: 7px; }
+      .breadcrumb strong { margin-left: 0; }
+      .top-meta { font-size: 10px; }
+      .content-scroll { padding: 18px 13px 25px; }
+      .page-heading h1 { font-size: 19px; }
+      .kpi-grid { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 9px; }
+      .kpi { min-height: 100px; padding: 13px; }
+      .kpi-value { font-size: 22px; }
+      .grid-2, .grid-3, .info-grid { grid-template-columns: 1fr; }
+      .quality-summary { grid-template-columns: 1fr; gap: 8px; }
+      .quality-stat { padding: 13px; }
+      .filter-bar { gap: 8px; padding: 10px; }
+      .filter-control { flex: 1 1 130px; }
+      .filter-control.search { flex-basis: 100%; }
+      .quality-row { grid-template-columns: 60px 1fr; }
+      .quality-row > :last-child { grid-column: 2; }
+    }
+  </style>
+</head>
+<body>
+  <section id="loginScreen" class="login-screen">
+    <div class="login-panel">
+      <form id="loginForm" class="login-box">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 5.5v16M8 7h8M8 11h8"/></svg>
+        </div>
+        <h1>ยินดีต้อนรับ</h1>
+        <p class="sub">เข้าสู่ระบบวิเคราะห์การยืม-คืนหนังสือ<br>ห้องสมุด Insight</p>
+        <div class="field">
+          <label for="loginName">ชื่อผู้ใช้งาน</label>
+          <input id="loginName" name="name" autocomplete="username" placeholder="กรอกชื่อของคุณ" required>
+        </div>
+        <div class="field">
+          <label for="loginPassword">รหัสผ่าน</label>
+          <div class="password-wrap">
+            <input id="loginPassword" name="password" type="password" autocomplete="current-password" placeholder="กรอกรหัสผ่าน" required>
+            <button id="togglePassword" class="show-password" type="button">แสดง</button>
+          </div>
+        </div>
+        <button class="primary-btn login-submit" type="submit">เข้าสู่ระบบ</button>
+        <p id="loginError" class="login-error" role="alert"></p>
+        <p class="login-note">บัญชีสำหรับสาธิต: ใช้ชื่อใดก็ได้ · รหัสผ่าน 12345</p>
+      </form>
+    </div>
+    <div class="login-art" aria-hidden="true">
+      <div class="art-content">
+        <div class="art-label">Library analytics dashboard</div>
+        <h2>เปลี่ยนข้อมูล<br>ให้เป็นการตัดสินใจ</h2>
+        <p>ติดตามการยืม คืนล่าช้า และความนิยมของหนังสือ เพื่อช่วยให้ห้องสมุดวางแผนได้อย่างมีหลักฐาน</p>
+        <div class="art-visual">
+          <svg viewBox="0 0 500 180" fill="none">
+            <path d="M35 145H467M35 104H467M35 63H467M35 22H467" stroke="#fff" stroke-opacity=".12"/>
+            <path d="M58 127 143 98 226 112 310 61 393 75 459 34" stroke="#8db1ff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M58 127 143 98 226 112 310 61 393 75 459 34V145H58z" fill="url(#chartFill)"/>
+            <circle cx="58" cy="127" r="4" fill="#fff"/><circle cx="143" cy="98" r="4" fill="#fff"/><circle cx="226" cy="112" r="4" fill="#fff"/><circle cx="310" cy="61" r="4" fill="#fff"/><circle cx="393" cy="75" r="4" fill="#fff"/><circle cx="459" cy="34" r="4" fill="#fff"/>
+            <defs><linearGradient id="chartFill" x1="258" y1="34" x2="258" y2="145" gradientUnits="userSpaceOnUse"><stop stop-color="#8DB1FF" stop-opacity=".3"/><stop offset="1" stop-color="#8DB1FF" stop-opacity="0"/></linearGradient></defs>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div id="appShell" class="app-shell hidden">
+    <aside id="sidebar" class="sidebar">
+      <div class="side-brand">
+        <div class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 5.5v16M8 7h8M8 11h8"/></svg></div>
+        <div><div class="brand-name">ห้องสมุด Insight</div><div class="brand-caption">LOAN ANALYTICS</div></div>
+      </div>
+      <div class="nav-caption">เมนูหลัก</div>
+      <nav id="navigation" class="nav-list" aria-label="เมนูหลัก"></nav>
+      <div class="side-bottom">
+        <div class="data-stamp"><div class="stamp-title">วันอ้างอิงข้อมูล</div><div class="stamp-sub">15 พฤศจิกายน 2026<br>ชุดข้อมูลจำลอง · 150 รายการ</div></div>
+        <div class="side-user">
+          <div class="avatar" id="userAvatar">U</div>
+          <div style="min-width:0"><div id="userName" class="user-name">ผู้ใช้งาน</div><div class="user-role">ผู้ดูแลห้องสมุด</div></div>
+          <button id="logoutButton" class="logout" type="button" aria-label="ออกจากระบบ" title="ออกจากระบบ">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 17l5-5-5-5M15 12H3"/><path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7"/></svg>
+          </button>
+        </div>
+      </div>
+    </aside>
+    <main class="main-area">
+      <header class="topbar">
+        <div class="breadcrumb"><button id="mobileMenu" class="mobile-menu" type="button" aria-label="เปิดเมนู"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><span>ระบบวิเคราะห์</span><strong id="topTitle">ภาพรวม</strong></div>
+        <div class="top-meta"><span class="live-dot"></span><span>ข้อมูลอัปเดตจากไฟล์ต้นฉบับ</span></div>
+      </header>
+      <section id="pageContent" class="content-scroll" tabindex="-1">
+        <div class="loading-state"><div class="spinner"></div>กำลังโหลดข้อมูลห้องสมุด…</div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+  (() => {
+    "use strict";
+    const AS_OF = "2026-11-15";
+    const PAGE_SIZE = 12;
+    const fields = ["รหัสการยืม","รหัสผู้ยืม","รหัสหนังสือ","ชื่อหนังสือ","หมวดหมู่","วันที่ยืม","กำหนดคืน","วันที่คืนจริง","สถานะการคืน"];
+    const pages = [
+      {id:"overview", label:"ภาพรวม", icon:"overview", description:"ภาพรวมการยืม-คืนและตัวชี้วัดสำคัญ"},
+      {id:"loans", label:"รายการยืมทั้งหมด", icon:"loans", description:"ค้นหา ตรวจสอบ และส่งออกรายการยืมตามตัวกรอง"},
+      {id:"overdue", label:"ติดตามค้างคืน", icon:"overdue", description:"รายการที่ยังไม่คืนเกินกำหนด ณ วันอ้างอิง"},
+      {id:"quality", label:"คุณภาพข้อมูล", icon:"quality", description:"ประเด็นผิดปกติ การจัดการ และขอบเขตข้อมูล"},
+      {id:"insights", label:"ข้อค้นพบ", icon:"insights", description:"สรุปประเด็นและข้อเสนอแนะจากข้อมูล"},
+      {id:"dictionary", label:"พจนานุกรมข้อมูล", icon:"dictionary", description:"ความหมายฟิลด์และแนวทางใช้งานชุดข้อมูล"}
+    ];
+    const icons = {
+      overview:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="11" width="7" height="10" rx="1.5"/><rect x="3" y="14" width="8" height="7" rx="1.5"/></svg>',
+      loans:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H20v17H7.5A2.5 2.5 0 0 0 5 21.5z"/><path d="M5 4.5v17M9 7h7M9 11h7"/></svg>',
+      overdue:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2M19 5l2-2"/></svg>',
+      quality:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3 3.8 7v5.5c0 4.6 3.4 7.4 8.2 9.5 4.8-2.1 8.2-4.9 8.2-9.5V7z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg>',
+      insights:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 19V5M4 19h17"/><path d="m7 15 4-4 3 2 6-7"/><path d="M17 6h3v3"/></svg>',
+      dictionary:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 5.5v16M8 7h8M8 11h8M8 15h5"/></svg>'
+    };
+    const state = {records:[], rows:[], rawCount:0, page:"overview", start:"", end:"", category:"", status:"", search:"", sort:"วันที่ยืม", direction:"desc", pageNum:1, loaded:false, error:""};
+    const $ = (selector, root=document) => root.querySelector(selector);
+    const esc = value => String(value ?? "").replace(/[&<>"']/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
+    const fmt = number => new Intl.NumberFormat("th-TH").format(number);
+    const pct = (num, den) => den ? `${(num/den*100).toFixed(1)}%` : "ไม่มีข้อมูล";
+    const parseDate = value => {
+      const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value || "").trim());
+      if (!match) return null;
+      const [, y, m, d] = match.map(Number);
+      const date = new Date(Date.UTC(y, m-1, d));
+      return date.getUTCFullYear()===y && date.getUTCMonth()===m-1 && date.getUTCDate()===d ? date : null;
+    };
+    const dayDiff = (later, earlier) => Math.round((later-earlier)/86400000);
+    const dateLabel = value => {
+      const date = parseDate(value);
+      return date ? new Intl.DateTimeFormat("th-TH",{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"}).format(date) : (value || "—");
+    };
+    function parseCSV(text) {
+      const matrix=[]; let row=[], cell="", quoted=false;
+      for (let i=0;i<text.length;i++) {
+        const char=text[i];
+        if (quoted) {
+          if (char==='"' && text[i+1]==='"') { cell+='"'; i++; }
+          else if (char==='"') quoted=false;
+          else cell+=char;
+        } else if (char==='"') quoted=true;
+        else if (char===",") { row.push(cell); cell=""; }
+        else if (char==="\n") { row.push(cell.replace(/\r$/,"")); matrix.push(row); row=[]; cell=""; }
+        else cell+=char;
+      }
+      if (cell.length || row.length) { row.push(cell.replace(/\r$/,"")); matrix.push(row); }
+      return matrix.filter(record => record.some(value => value.trim() !== ""));
+    }
+    function analyzeRows(text) {
+      const parsed=parseCSV(text);
+      if (!parsed.length) throw new Error("ไฟล์ CSV ไม่มีข้อมูล");
+      const header=parsed.shift().map(x=>x.replace(/^\uFEFF/,"").trim());
+      const missing=fields.filter(field=>!header.includes(field));
+      if (missing.length) throw new Error(`ไม่พบคอลัมน์ที่จำเป็น: ${missing.join(", ")}`);
+      const raw=parsed.map((values,index) => {
+        const rec={_sourceLine:index+2};
+        header.forEach((key,i)=>rec[key]=(values[i]||"").trim());
+        rec._issues=[];
+        return rec;
+      });
+      const firstById=new Map(), all=[];
+      raw.forEach(record=>{
+        const id=record[fields[0]];
+        if (id && firstById.has(id)) {
+          record._duplicate=true;
+          record._issues.push({reason:"รหัสการยืมซ้ำ", action:"ตัดรายการที่ซ้ำออกจากการวิเคราะห์ โดยเก็บรายการแรกไว้"});
+        } else if (id) firstById.set(id,record);
+        all.push(record);
+      });
+      for (const r of all) {
+        const [loanId, borrowerId, bookId, title, rawCategory, borrowRaw, dueRaw, actualRaw, rawStatus] = fields.map(f=>r[f]);
+        const category=rawCategory.trim(), status=rawStatus.trim();
+        r._category=category; r._statusText=status;
+        if (rawCategory!==category) r._issues.push({reason:"หมวดหมู่มีช่องว่างเกิน",action:"ตัดช่องว่างหัวท้ายเพื่อจัดกลุ่มหมวดหมู่ให้ตรงกัน"});
+        if (!bookId) r._issues.push({reason:"ไม่มีรหัสหนังสือ",action:"เก็บรายการไว้ แต่ใช้ชื่อหนังสือในการสรุป และระบุให้ตรวจสอบรหัส"});
+        if (!borrowerId) r._issues.push({reason:"ไม่มีรหัสผู้ยืม",action:"ไม่สามารถนับสมาชิกของรายการนี้ได้; ไม่เติมข้อมูลแทน"});
+        const borrowDate=parseDate(borrowRaw), dueDate=parseDate(dueRaw), actualDate=parseDate(actualRaw);
+        r._borrowDate=borrowDate; r._dueDate=dueDate; r._actualDate=actualDate;
+        r._dateValid={borrow:!!borrowDate,due:!!dueDate,actual:!actualRaw||!!actualDate};
+        if (!borrowDate) r._issues.push({reason:borrowRaw?"วันที่ยืมไม่ถูกต้อง":"ไม่มีวันที่ยืม",action:"แยกออกจากตัวชี้วัดที่ต้องใช้วันที่ยืม"});
+        if (!dueDate) r._issues.push({reason:dueRaw?"กำหนดคืนไม่ถูกต้อง":"ไม่มีวันกำหนดคืน",action:"ไม่ประเมินสถานะการคืนที่ต้องใช้กำหนดคืน"});
+        if (actualRaw && !actualDate) r._issues.push({reason:"วันที่คืนจริงไม่ถูกต้อง",action:"ไม่คำนวณระยะเวลาคืนจนกว่าจะตรวจสอบ"});
+        if (borrowDate && dueDate && dueDate<borrowDate) r._issues.push({reason:"กำหนดคืนก่อนวันที่ยืม",action:"แยกออกจากการประเมินสถานะและระยะเวลา; ตรวจสอบต้นทาง"});
+        if (actualDate && borrowDate && actualDate<borrowDate) r._issues.push({reason:"วันที่คืนจริงก่อนวันที่ยืม",action:"แยกออกจากสถิติระยะเวลาคืน"});
+        if (status==="คืนแล้ว" && !actualRaw) r._issues.push({reason:"สถานะคืนแล้วแต่ไม่มีวันที่คืนจริง",action:"รอตรวจสอบ ไม่สมมติวันที่คืน"});
+        if (status==="ยังไม่คืน" && actualRaw) r._issues.push({reason:"สถานะยังไม่คืนแต่มีวันที่คืนจริง",action:"รอตรวจสอบความขัดแย้ง ไม่ตัดสินสถานะเอง"});
+        if (!["คืนแล้ว","ยังไม่คืน"].includes(status)) r._issues.push({reason:"สถานะการคืนไม่อยู่ในรายการที่รู้จัก",action:"แยกออกจากการจัดกลุ่มสถานะจนกว่าจะยืนยัน"});
+        r._duplicate=r._duplicate||false;
+        r._duration=borrowDate&&actualDate&&actualDate>=borrowDate ? dayDiff(actualDate,borrowDate) : null;
+        r._lateDays=dueDate&&actualDate&&actualDate>=dueDate ? dayDiff(actualDate,dueDate) : (dueDate&&actualDate ? 0 : null);
+        r._overdueDays=dueDate ? Math.max(0,dayDiff(parseDate(AS_OF),dueDate)) : null;
+        const chronologyOk=!!dueDate && !(borrowDate&&dueDate<borrowDate);
+        if (status==="คืนแล้ว" && actualDate && chronologyOk) r._group=actualDate<=dueDate?"ตรงเวลา":"คืนล่าช้า";
+        else if (status==="ยังไม่คืน" && !actualRaw && chronologyOk) r._group=parseDate(AS_OF)>dueDate?"ค้างเกินกำหนด":"ยังไม่เกินกำหนด";
+        else r._group="ประเมินไม่ได้";
+        r._usable=!r._duplicate;
+        r._assessmentOk=r._group!=="ประเมินไม่ได้";
+      }
+      return {raw,records:all.filter(r=>r._usable)};
+    }
+    async function loadData() {
+      try {
+        const response=await fetch("./assets/library_book_loans_dirty_150.csv",{cache:"no-store"});
+        if (!response.ok) throw new Error(`โหลดไฟล์ CSV ไม่สำเร็จ (HTTP ${response.status})`);
+        const {raw,records}=analyzeRows(await response.text());
+        state.rawCount=raw.length; state.rows=raw; state.records=records; state.loaded=true; state.error="";
+        render();
+      } catch(error) {
+        state.error=error.message||"เกิดข้อผิดพลาดในการโหลดข้อมูล";
+        const content=$("#pageContent");
+        content.innerHTML=`<div class="card loading-state"><strong>ไม่สามารถโหลดข้อมูลได้</strong><br>${esc(state.error)}<br><br>เปิดเว็บผ่านไฟล์ launch.bat ในโฟลเดอร์งาน และตรวจว่าไฟล์ assets/library_book_loans_dirty_150.csv อยู่ครบ</div>`;
+      }
+    }
+    const navHTML=pages.map(p=>`<button class="nav-item${state.page===p.id?" active":""}" data-page="${p.id}" type="button">${icons[p.icon]}<span>${p.label}</span></button>`).join("");
+    function recordsFiltered() {
+      let records=state.records.filter(r=>{
+        if (state.start||state.end) {
+          if (!r._borrowDate) return false;
+          const date=r[fields[5]];
+          if (state.start&&date<state.start) return false;
+          if (state.end&&date>state.end) return false;
+        }
+        if (state.category&&r._category!==state.category) return false;
+        if (state.status&&r._group!==state.status) return false;
+        if (state.search) {
+          const q=state.search.toLocaleLowerCase();
+          if (![r[fields[0]],r[fields[1]],r[fields[3]]].some(v=>v.toLocaleLowerCase().includes(q))) return false;
+        }
+        return true;
+      });
+      return records;
+    }
+    function filterBar() {
+      const categories=[...new Set(state.records.map(r=>r._category).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"th"));
+      return `<div class="filter-bar" aria-label="ตัวกรองข้อมูล">
+        <div class="filter-control"><label for="startDate">ตั้งแต่วันที่ยืม</label><input id="startDate" type="date" value="${esc(state.start)}"></div>
+        <div class="filter-control"><label for="endDate">ถึงวันที่ยืม</label><input id="endDate" type="date" value="${esc(state.end)}"></div>
+        <div class="filter-control"><label for="categoryFilter">หมวดหมู่</label><select id="categoryFilter"><option value="">ทุกหมวดหมู่</option>${categories.map(c=>`<option value="${esc(c)}" ${state.category===c?"selected":""}>${esc(c)}</option>`).join("")}</select></div>
+        <div class="filter-control"><label for="statusFilter">กลุ่มสถานะ</label><select id="statusFilter"><option value="">ทุกกลุ่มสถานะ</option>${["ตรงเวลา","คืนล่าช้า","ค้างเกินกำหนด","ยังไม่เกินกำหนด","ประเมินไม่ได้"].map(s=>`<option value="${s}" ${state.status===s?"selected":""}>${s}</option>`).join("")}</select></div>
+        <div class="filter-control search"><label for="searchFilter">ค้นหารหัสยืม / ผู้ยืม / ชื่อหนังสือ</label><input id="searchFilter" type="search" value="${esc(state.search)}" placeholder="พิมพ์คำค้นหา…"></div>
+        <button class="clear-btn" id="clearFilters" type="button">ล้างตัวกรอง</button>
+      </div>`;
+    }
+    function heading(title, description, actions="") {
+      return `<div class="page-heading"><div><h1>${title}</h1><p>${description}</p></div>${actions?`<div class="heading-actions">${actions}</div>`:""}</div>`;
+    }
+    function filteredSummary(data) {
+      const active=state.start||state.end||state.category||state.status||state.search;
+      return active?`แสดง ${fmt(data.length)} จาก ${fmt(state.records.length)} รายการ หลังตัดข้อมูลซ้ำ`:`ข้อมูลพร้อมใช้ ${fmt(state.records.length)} รายการ · ต้นฉบับ ${fmt(state.rawCount)} แถว`;
+    }
+    function kpi(label,value,foot,tint="") {
+      return `<div class="card kpi"><div class="kpi-top"><span>${label}</span><span class="kpi-icon ${tint}">${icons.kpi}</span></div><div class="kpi-value">${value}</div><div class="kpi-foot">${foot}</div></div>`;
+    }
+    icons.kpi='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V5M4 19h16"/><path d="M8 15v-4M12 15V7M16 15V9"/></svg>';
+    function groupCount(records,group) { return records.filter(r=>r._group===group).length; }
+    function getMetrics(records) {
+      const returned=records.filter(r=>r._group==="ตรงเวลา"||r._group==="คืนล่าช้า");
+      const outstanding=records.filter(r=>r._group==="ค้างเกินกำหนด"||r._group==="ยังไม่เกินกำหนด");
+      const durations=returned.map(r=>r._duration).filter(Number.isFinite);
+      const sorted=[...durations].sort((a,b)=>a-b);
+      const average=durations.length?durations.reduce((a,b)=>a+b,0)/durations.length:null;
+      const median=sorted.length?(sorted.length%2?sorted[(sorted.length-1)/2]:(sorted[sorted.length/2-1]+sorted[sorted.length/2])/2):null;
+      const sd=durations.length?Math.sqrt(durations.reduce((sum,n)=>sum+(n-average)**2,0)/durations.length):null;
+      return {returned,outstanding,durations,average,median,sd,min:sorted.length?sorted[0]:null,max:sorted.length?sorted[sorted.length-1]:null,late:groupCount(records,"คืนล่าช้า"),onTime:groupCount(records,"ตรงเวลา"),overdue:groupCount(records,"ค้างเกินกำหนด"),notDue:groupCount(records,"ยังไม่เกินกำหนด"),unknown:groupCount(records,"ประเมินไม่ได้")};
+    }
+    function barChart(items,color="#6d8ff0") {
+      if (!items.length) return `<div class="empty-state">ไม่มีข้อมูลในช่วงที่เลือก</div>`;
+      const max=Math.max(1,...items.map(x=>x.value));
+      return `<div class="bar-chart">${items.map(item=>`<div class="bar-row"><div class="bar-label" title="${esc(item.label)}">${esc(item.label)}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.max(item.value?3:0,item.value/max*100)}%;background:${color}"></div></div><div class="bar-count">${fmt(item.value)}</div></div>`).join("")}</div>`;
+    }
+    function groupBars(records, accessor, limit=Infinity) {
+      const counter=new Map();
+      records.forEach(r=>{const key=accessor(r);if(key)counter.set(key,(counter.get(key)||0)+1);});
+      return [...counter].map(([label,value])=>({label,value})).sort((a,b)=>b.value-a.value||a.label.localeCompare(b.label,"th")).slice(0,limit);
+    }
+    function lineChart(records) {
+      const months=new Map();
+      records.forEach(r=>{if(r._borrowDate){const key=r[fields[5]].slice(0,7);months.set(key,(months.get(key)||0)+1);}});
+      const values=[...months].sort((a,b)=>a[0].localeCompare(b[0]));
+      if (!values.length) return `<div class="empty-state">ไม่มีวันที่ยืมที่ใช้แสดงแนวโน้มได้</div>`;
+      const width=520,height=170,left=28,right=12,top=15,bottom=30,innerW=width-left-right,innerH=height-top-bottom,max=Math.max(1,...values.map(x=>x[1]));
+      const pts=values.map(([month,n],i)=>({x:left+(values.length===1?innerW/2:i*innerW/(values.length-1)),y:top+innerH-(n/max)*innerH,month,n}));
+      const path=pts.map((p,i)=>`${i?"L":"M"}${p.x},${p.y}`).join(" ");
+      const area=`${path} L${pts[pts.length-1].x},${top+innerH} L${pts[0].x},${top+innerH} Z`;
+      const grid=[0,.5,1].map(t=>{const y=top+innerH-innerH*t;return `<path d="M${left} ${y}H${width-right}" stroke="#edf0f5"/><text x="${left-7}" y="${y+3}" text-anchor="end" fill="#98a3b2" font-size="9">${Math.round(max*t)}</text>`;}).join("");
+      return `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="กราฟแนวโน้มจำนวนรายการยืมรายเดือน">${grid}<path d="${area}" fill="#6d8ff0" fill-opacity=".09"/><path d="${path}" fill="none" stroke="#6688eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>${pts.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="3.5" fill="#fff" stroke="#6688eb" stroke-width="2"><title>${p.month}: ${p.n} รายการ</title></circle><text x="${p.x}" y="${height-7}" text-anchor="middle" fill="#7e8ba0" font-size="9">${p.month.slice(5,7)}/${p.month.slice(0,4).slice(2)}</text>`).join("")}</svg>`;
+    }
+    function histogram(values,label) {
+      if(!values.length) return `<div class="empty-state">ไม่มีข้อมูลที่ใช้คำนวณ</div>`;
+      const maxValue=Math.max(1,...values), bins=Math.min(8,Math.max(4,Math.ceil(Math.sqrt(values.length))));
+      const width=Math.max(1,(maxValue+1)/bins), counts=Array.from({length:bins},()=>0);
+      values.forEach(v=>counts[Math.min(bins-1,Math.floor(v/width))]++);
+      const maxCount=Math.max(1,...counts);
+      return `<div class="chart-area"><svg viewBox="0 0 300 150" role="img" aria-label="การกระจาย${label}">${counts.map((n,i)=>{const x=20+i*34,y=115-n/maxCount*85,h=n/maxCount*85;return `<rect x="${x}" y="${y}" width="23" height="${h}" rx="4" fill="${label==="วันล่าช้า"?"#e9a458":"#6d8ff0"}"><title>${n} รายการ</title></rect><text x="${x+11}" y="132" text-anchor="middle" fill="#7f8ba0" font-size="8">${Math.floor(i*width)}+</text>`;}).join("")}<path d="M16 116H292" stroke="#e9edf3"/><text x="155" y="148" text-anchor="middle" fill="#8995a8" font-size="8">${label} · ช่วงชั้นเป็นวัน</text></svg></div>`;
+    }
+    function statusLegend(metrics) {
+      const items=[["ตรงเวลา",metrics.onTime,"#21a17f"],["คืนล่าช้า",metrics.late,"#e59a47"],["ค้างเกินกำหนด",metrics.overdue,"#dc6264"],["ยังไม่เกินกำหนด",metrics.notDue,"#6688eb"],["ประเมินไม่ได้",metrics.unknown,"#a4adba"]];
+      return `<div class="status-legend">${items.map(([name,n,color])=>`<div class="legend-row"><span class="legend-dot" style="background:${color}"></span><span>${name}</span><strong>${fmt(n)}</strong></div>`).join("")}</div>`;
+    }
+    function insightsFor(records,metrics) {
+      const titles=groupBars(records,r=>r[fields[3]],1), categories=groupBars(records,r=>r._category,1);
+      const returnedN=metrics.onTime+metrics.late, activeN=metrics.overdue+metrics.notDue;
+      return [
+        `<strong>หนังสือที่ถูกยืมมากที่สุด:</strong> ${titles.length?`${esc(titles[0].label)} ${fmt(titles[0].value)} ครั้ง`: "ไม่มีข้อมูล"}${categories.length?` · หมวดที่มียอดยืมสูงสุดคือ ${esc(categories[0].label)} (${fmt(categories[0].value)} ครั้ง)`:""} ควรตรวจเทียบจำนวนเล่มคงคลังก่อนตัดสินใจจัดซื้อ`,
+        `<strong>การคืนล่าช้า:</strong> ${fmt(metrics.late)} จาก ${fmt(returnedN)} รายการที่ประเมินการคืนแล้ว (${pct(metrics.late,returnedN)}) ควรติดตามกำหนดคืนและแจ้งเตือนก่อนครบกำหนด`,
+        `<strong>รายการค้างเกินกำหนด:</strong> ${fmt(metrics.overdue)} จาก ${fmt(activeN)} รายการที่ยังไม่คืน (${pct(metrics.overdue,activeN)}) แนะนำให้ติดต่อผู้ยืมตามลำดับวันที่เกินกำหนด`,
+        `<strong>ระยะเวลายืมถึงคืน:</strong> ${metrics.average===null?"ไม่มีข้อมูล":`เฉลี่ย ${metrics.average.toFixed(1)} วัน และมัธยฐาน ${metrics.median.toFixed(1)} วัน จาก ${fmt(metrics.durations.length)} รายการที่คำนวณได้`} ใช้ประกอบการวางรอบติดตามหนังสือ`,
+        `<strong>ข้อจำกัด:</strong> ชุดข้อมูลไม่มีจำนวนหนังสือคงคลังและประวัติต่ออายุ อีกทั้งมีรายการรอตรวจสอบ ${fmt(metrics.unknown)} รายการ จึงไม่ควรสรุปว่าหนังสือขาดแคลนจากยอดยืมเพียงอย่างเดียว`
+      ];
+    }
+    function overview(records) {
+      const m=getMetrics(records), returnedN=m.onTime+m.late, titles=groupBars(records,r=>r[fields[3]],5), categories=groupBars(records,r=>r._category);
+      return `${heading("ภาพรวม","ติดตามการยืม-คืนและความต้องการหนังสือจากข้อมูลจริง")}
+      ${filterBar()}
+      <div class="kpi-grid">
+        ${kpi("รายการยืมทั้งหมด",fmt(records.length),filteredSummary(records),"")}
+        ${kpi("ผู้ยืมไม่ซ้ำ",fmt(new Set(records.map(r=>r[fields[1]]).filter(Boolean)).size),"นับรหัสผู้ยืมที่มีข้อมูล","teal")}
+        ${kpi("ยังไม่คืน",fmt(m.overdue+m.notDue),`เกินกำหนด ${fmt(m.overdue)} · ยังไม่เกิน ${fmt(m.notDue)}`,"amber")}
+        ${kpi("ค้างเกินกำหนด",fmt(m.overdue),`วันอ้างอิง ${dateLabel(AS_OF)}`,"red")}
+        ${kpi("อัตราคืนตรงเวลา",pct(m.onTime,returnedN),`${fmt(m.onTime)} / ${fmt(returnedN)} รายการคืนที่ประเมินได้`,"teal")}
+      </div>
+      <div class="grid-2">
+        <article class="card chart-card"><div class="card-heading"><div><h2>จำนวนครั้งยืมตามหมวดหมู่</h2><p>นับรายการยืมที่ไม่ซ้ำตามรหัสการยืม</p></div><span class="subtle-tag">${fmt(records.length)} รายการ</span></div>${barChart(categories)}</article>
+        <article class="card chart-card"><div class="card-heading"><div><h2>หนังสือยอดนิยม 5 อันดับ</h2><p>จัดอันดับจากจำนวนรายการยืม</p></div><span class="subtle-tag">Top 5</span></div>${barChart(titles,"#31a28c")}</article>
+      </div>
+      <div class="grid-2">
+        <article class="card chart-card"><div class="card-heading"><div><h2>แนวโน้มรายการยืมรายเดือน</h2><p>เรียงตามเดือนของวันที่ยืม (ค.ศ.)</p></div><span class="subtle-tag">รายการ</span></div><div class="chart-area">${lineChart(records)}</div></article>
+        <article class="card chart-card"><div class="card-heading"><div><h2>สถานะการคืน</h2><p>จำนวนและสัดส่วนของแต่ละกลุ่ม</p></div><span class="subtle-tag">${fmt(records.length)} รายการ</span></div>${statusLegend(m)}</article>
+      </div>
+      <div class="grid-2">
+        <article class="card chart-card"><div class="card-heading"><div><h2>สถิติเวลายืมถึงคืน</h2><p>ผลต่างวันปฏิทิน ไม่บวกหนึ่งวัน · เฉพาะรายการที่ประเมินได้</p></div><span class="subtle-tag">${fmt(m.durations.length)} รายการ</span></div><div class="stats-grid">${[["เฉลี่ย",m.average],["มัธยฐาน",m.median],["ส่วนเบี่ยงเบนฯ",m.sd],["ต่ำสุด",m.min],["สูงสุด",m.max]].map(([label,value])=>`<div class="stat-cell"><strong>${value===null?"—":Number(value).toFixed(label==="ส่วนเบี่ยงเบนฯ"?1:label==="เฉลี่ย"||label==="มัธยฐาน"?1:0)}</strong><span>${label} (วัน)</span></div>`).join("")}</div></article>
+        <article class="card chart-card"><div class="card-heading"><div><h2>การกระจายวันล่าช้า</h2><p>รายการคืนแล้วที่ประเมินวันล่าช้าได้</p></div><span class="subtle-tag">${fmt(records.filter(r=>r._group==="ตรงเวลา"||r._group==="คืนล่าช้า").filter(r=>r._lateDays!==null).length)} รายการ</span></div>${histogram(records.filter(r=>(r._group==="ตรงเวลา"||r._group==="คืนล่าช้า")&&r._lateDays!==null).map(r=>r._lateDays),"วันล่าช้า")}</article>
+      </div>
+      <div class="grid-2">
+        <article class="card chart-card"><div class="card-heading"><div><h2>การกระจายเวลายืมถึงคืน</h2><p>เฉพาะรายการคืนแล้วที่มีวันที่ครบถ้วน</p></div><span class="subtle-tag">${fmt(m.durations.length)} รายการ</span></div>${histogram(m.durations,"วันยืมถึงคืน")}</article>
+        <article class="card chart-card"><div class="card-heading"><div><h2>ข้อค้นพบเบื้องต้น</h2><p>ข้อสังเกตจากรายการที่ผ่านตัวกรองปัจจุบัน</p></div><button class="clear-btn" data-page-link="insights" type="button">ดูทั้งหมด</button></div><div class="insight-list">${insightsFor(records,m).slice(0,3).map((text,i)=>`<div class="insight-item"><span class="insight-number">${i+1}</span><p>${text}</p></div>`).join("")}</div></article>
+      </div>
+      ${footerScope(records)}`;
+    }
+    function footerScope(records) {
+      const invalidBorrow=records.filter(r=>!r._borrowDate).length;
+      return `<div style="padding:4px 2px;color:#8a96a8;font-size:10px">แหล่งข้อมูล: library_book_loans_dirty_150.csv · วันอ้างอิง: ${dateLabel(AS_OF)} · รายการวิเคราะห์หลังตัดซ้ำ ${fmt(records.length)} รายการ · วันที่ยืมใช้กรองไม่ได้ ${fmt(invalidBorrow)} รายการ</div>`;
+    }
+    function statusPill(group) {
+      const map={"ตรงเวลา":["คืนตรงเวลา","pill-ok"],"คืนล่าช้า":["คืนล่าช้า","pill-late"],"ค้างเกินกำหนด":["ค้างเกินกำหนด","pill-overdue"],"ยังไม่เกินกำหนด":["ยังไม่เกินกำหนด","pill-active"],"ประเมินไม่ได้":["ประเมินไม่ได้","pill-unknown"]};
+      const [label,klass]=map[group]||["ไม่ทราบสถานะ","pill-unknown"];
+      return `<span class="status-pill ${klass}">${label}</span>`;
+    }
+    function table(rows,kind="loans",showPager=true) {
+      const columns=kind==="overdue"
+        ? [["รหัสการยืม","id"],["รหัสผู้ยืม","borrower"],["ชื่อหนังสือ","title"],["กำหนดคืน","due"],["วันเกินกำหนด","overdue"]]
+        : kind==="quality"
+          ? [["รหัสการยืม","id"],["ปัญหาที่พบ","problem"],["แนวทางจัดการ","action"]]
+          : [["รหัสการยืม","id"],["รหัสผู้ยืม","borrower"],["ชื่อหนังสือ","title"],["หมวดหมู่","category"],["วันที่ยืม","borrow"],["กำหนดคืน","due"],["วันที่คืนจริง","actual"],["สถานะคำนวณ","group"],["วันล่าช้า","late"]];
+      let sorted=[...rows];
+      if(kind==="loans") sorted.sort((a,b)=>{
+        const sortValue = record => state.sort==="กลุ่มสถานะคำนวณ" ? record._group : state.sort==="วันล่าช้า" ? (record._lateDays??-1) : record[state.sort]||"";
+        const av=sortValue(a),bv=sortValue(b);
+        const cmp=typeof av==="number"&&typeof bv==="number" ? av-bv : String(av).localeCompare(String(bv),"th",{numeric:true});
+        const ordered=cmp||(a[fields[0]].localeCompare(b[fields[0]],"th",{numeric:true}));
+        return ordered*(state.direction==="asc"?1:-1);
+      });
+      else if(kind==="overdue") sorted.sort((a,b)=>(b._overdueDays||0)-(a._overdueDays||0));
+      const pageCount=Math.max(1,Math.ceil(sorted.length/PAGE_SIZE));
+      state.pageNum=Math.min(state.pageNum,pageCount);
+      const current=showPager?sorted.slice((state.pageNum-1)*PAGE_SIZE,state.pageNum*PAGE_SIZE):sorted;
+      const rowsHTML=current.map(r=>{
+        if(kind==="quality"){
+          const issue=r._qualityIssue||r._issues[0]; return `<tr><td class="id-code">${esc(r[fields[0]]||"—")}${r._duplicate?" · ซ้ำ":""}</td><td><strong>${esc(issue.reason)}</strong><div style="margin-top:3px;color:#98a2b2;font-size:9px">บรรทัดต้นฉบับ ${r._sourceLine}</div></td><td>${esc(issue.action)}</td></tr>`;
+        }
+        if(kind==="overdue") return `<tr><td class="id-code">${esc(r[fields[0]])}</td><td>${esc(r[fields[1]]||"—")}</td><td>${esc(r[fields[3]]||"—")}</td><td>${dateLabel(r[fields[6]])}</td><td><strong style="color:#c34850">${fmt(r._overdueDays)} วัน</strong></td></tr>`;
+        return `<tr><td class="id-code">${esc(r[fields[0]])}</td><td>${esc(r[fields[1]]||"—")}</td><td>${esc(r[fields[3]]||"—")}</td><td>${esc(r._category||"—")}</td><td>${dateLabel(r[fields[5]])}</td><td>${dateLabel(r[fields[6]])}</td><td>${dateLabel(r[fields[7]])}</td><td>${statusPill(r._group)}</td><td>${r._lateDays===null?"—":fmt(r._lateDays)}</td></tr>`;
+      }).join("");
+      const sortKeys={id:fields[0],borrower:fields[1],title:fields[3],category:fields[4],borrow:fields[5],due:fields[6],actual:fields[7],group:"กลุ่มสถานะคำนวณ",late:"วันล่าช้า"};
+      const header=columns.map(([label,key])=>kind==="loans"?`<th data-sort="${sortKeys[key]}">${label} ${state.sort===sortKeys[key]?(state.direction==="asc"?"↑":"↓"):""}</th>`:`<th>${label}</th>`).join("");
+      const empty=rows.length?`<tr><td colspan="${columns.length}"><div class="empty-state"><strong>ไม่พบรายการ</strong>ลองปรับตัวกรองหรือคำค้นหา</div></td></tr>`:`<tr><td colspan="${columns.length}"><div class="empty-state"><strong>ไม่มีข้อมูลในกลุ่มนี้</strong>เลือกตัวกรองอื่นเพื่อดูรายการ</div></td></tr>`;
+      return `<div class="table-wrap"><table><thead><tr>${header}</tr></thead><tbody>${rowsHTML||empty}</tbody></table></div>${showPager?`<div class="table-foot"><span>แสดง ${sorted.length?fmt((state.pageNum-1)*PAGE_SIZE+1):0}–${fmt(Math.min(state.pageNum*PAGE_SIZE,sorted.length))} จาก ${fmt(sorted.length)} รายการ</span><div class="pager"><button data-page-num="${state.pageNum-1}" ${state.pageNum<=1?"disabled":""}>ก่อนหน้า</button><button class="current">${state.pageNum} / ${pageCount}</button><button data-page-num="${state.pageNum+1}" ${state.pageNum>=pageCount?"disabled":""}>ถัดไป</button></div></div>`:""}`;
+    }
+    function exportButton(label="ส่งออก CSV") { return `<button type="button" class="primary-btn" id="exportButton" style="min-height:34px;padding:0 12px;font-size:10px">${label}</button>`; }
+    function pageContent(records) {
+      if (state.page==="overview") return overview(records);
+      if (state.page==="loans") return `${heading("รายการยืมทั้งหมด","ค้นหาและตรวจสอบรายละเอียดรายการที่ตรงกับตัวกรอง",exportButton())}${filterBar()}<article class="card table-card"><div class="table-head"><div><h2>รายละเอียดรายการยืม</h2><p>${filteredSummary(records)} · คลิกชื่อคอลัมน์เพื่อเรียงลำดับ</p></div></div>${table(records,"loans")}</article>${footerScope(records)}`;
+      if (state.page==="overdue") {
+        const overdue=records.filter(r=>r._group==="ค้างเกินกำหนด");
+        return `${heading("ติดตามค้างคืน","รายการยังไม่คืนซึ่งพ้นกำหนดคืน ณ วันที่ 15 พฤศจิกายน 2026",exportButton())}${filterBar()}<div class="notice">นับวันเกินกำหนด = ค่าสูงสุดระหว่าง 0 กับ (15 พ.ย. 2026 − กำหนดคืน) · รายการสถานะขัดแย้งหรือวันที่ไม่ถูกต้องจะแสดงในหน้า “คุณภาพข้อมูล” และไม่นับเป็นรายการค้างคืน</div><article class="card table-card"><div class="table-head"><div><h2>รายการค้างเกินกำหนด</h2><p>พบ ${fmt(overdue.length)} รายการจาก ${fmt(records.length)} รายการตามตัวกรอง</p></div></div>${table(overdue,"overdue")}</article>${footerScope(records)}`;
+      }
+      if (state.page==="quality") {
+        const issues=state.rows.filter(r=>r._issues.length>0);
+        const issueEntries=issues.flatMap(r=>r._issues.map(issue=>({...r,_qualityIssue:issue})));
+        const duplicate=state.rows.filter(r=>r._duplicate).length;
+        const corrected=state.rows.filter(r=>r._issues.some(i=>i.reason.includes("ช่องว่าง"))).length;
+        const review=state.rows.filter(r=>!r._duplicate&&r._issues.some(i=>!i.reason.includes("ช่องว่าง")&&!i.reason.includes("รหัสหนังสือ")&&!i.reason.includes("รหัสผู้ยืม"))).length;
+        return `${heading("คุณภาพข้อมูล","เก็บแถวต้นฉบับไว้ตรวจสอบ และแยกปัญหาออกจากตัวชี้วัดที่เกี่ยวข้อง")}
+          <div class="quality-summary"><div class="card quality-stat"><span>จำนวนแถวต้นฉบับ</span><strong>${fmt(state.rawCount)}</strong><small>ข้อมูลจากไฟล์ CSV</small></div><div class="card quality-stat"><span>รายการไม่ซ้ำที่ใช้วิเคราะห์</span><strong>${fmt(state.records.length)}</strong><small>ตัดรหัสยืมซ้ำ ${fmt(duplicate)} แถวออก</small></div><div class="card quality-stat"><span>รายการที่มีประเด็นตรวจสอบ</span><strong>${fmt(issues.length)}</strong><small>รายการหนึ่งอาจมีมากกว่าหนึ่งประเด็น</small></div></div>
+          <div class="notice">แนวทาง: ไม่เติมค่าที่ไม่มีหลักฐาน · ตัดช่องว่างหัวท้ายเพื่อรวมหมวดหมู่ · เก็บรายการผิดปกติให้ตรวจดูได้ · ตัดแถวรหัสซ้ำออกจากการวิเคราะห์โดยคงรายการแรกไว้</div>
+          <div class="info-grid" style="margin-bottom:14px"><article class="card info-card"><h2>ผลกระทบต่อการวิเคราะห์</h2><ul><li>${fmt(duplicate)} แถวรหัสซ้ำ ไม่ถูกนับซ้ำในกราฟและ KPI</li><li>${fmt(corrected)} รายการหมวดหมู่มีช่องว่างหัวท้าย ปรับข้อความเพื่อจัดกลุ่มให้ถูกต้อง</li><li>${fmt(review)} รายการมีประเด็นที่รอตรวจสอบหรือถูกแยกออกจากตัวชี้วัดบางรายการ</li><li>ค่าว่างวันที่คืนของรายการ “ยังไม่คืน” ถือเป็นปกติ ไม่เติมวันที่คืนย้อนหลัง</li></ul></article><article class="card info-card"><h2>จำนวนก่อนและหลังเตรียมข้อมูล</h2><p>ต้นฉบับ ${fmt(state.rawCount)} แถว → หลังตัดรายการซ้ำ ${fmt(state.records.length)} รายการพร้อมวิเคราะห์ตามขอบเขตแต่ละตัวชี้วัด</p><p>วันอ้างอิงคงที่ 15 พฤศจิกายน 2026 ไม่ใช้วันที่เครื่อง และไม่มีข้อมูลจำนวนเล่มคงคลังหรือประวัติต่ออายุ</p></article></div>
+          <article class="card table-card"><div class="table-head"><div><h2>รายการที่มีประเด็นตรวจสอบ</h2><p>${fmt(issueEntries.length)} ประเด็นจาก ${fmt(issues.length)} แถวต้นฉบับ · แสดงข้อมูลและแนวทางแยกตามปัญหา</p></div><button id="exportQuality" class="clear-btn" type="button">ส่งออกรายการปัญหา</button></div>${table(issueEntries,"quality",true)}</article>${footerScope(records)}`;
+      }
+      if (state.page==="insights") {
+        const m=getMetrics(records);
+        return `${heading("ข้อค้นพบและข้อเสนอแนะ","อ่านผลจากข้อมูลพร้อมใช้ภายใต้ตัวกรองปัจจุบัน")}${filterBar()}<div class="insight-list">${insightsFor(records,m).map((text,i)=>`<div class="card insight-item" style="padding:15px"><span class="insight-number">${i+1}</span><p>${text}</p></div>`).join("")}</div><div class="info-grid" style="margin-top:14px"><article class="card info-card"><h2>ข้อเสนอให้ดำเนินการ</h2><ul><li>ใช้รายการค้างเกินกำหนดเป็นรายการติดตาม และตรวจสอบสถานะกับผู้ยืมก่อนดำเนินการ</li><li>ใช้ยอดยืมแยกหมวดและชื่อเรื่องเพื่อวางแผนตรวจสอบความต้องการร่วมกับข้อมูลคงคลังจริง</li><li>ตรวจสอบรายการข้อมูลที่ขัดแย้งก่อนนำไปประเมินผลการคืนหรือระยะเวลายืม</li></ul></article><article class="card info-card"><h2>ขอบเขตและข้อจำกัด</h2><p>ข้อมูลมี 150 แถวในช่วง ก.ย.–พ.ย. 2026 เป็นข้อมูลจำลอง ไม่มีจำนวนคงคลังและการต่ออายุการยืม ตัวชี้วัดแต่ละค่าใช้จำนวนรายการที่ประเมินได้ต่างกัน โดยไม่สรุปเกินหลักฐาน</p></article></div>${footerScope(records)}`;
+      }
+      return `${heading("พจนานุกรมข้อมูล","คำอธิบายฟิลด์จากไฟล์ต้นฉบับและกติกาที่ใช้ในเว็บไซต์",`<a class="primary-btn" style="display:inline-flex;align-items:center;text-decoration:none;font-size:10px;min-height:34px" href="./assets/library_book_loans_prepared_149.csv" download>ดาวน์โหลดข้อมูลพร้อมใช้</a><a class="clear-btn" style="display:inline-flex;align-items:center;text-decoration:none" href="./assets/data_dictionary.csv" download>ดาวน์โหลด Dictionary</a>`)}
+        <article class="card table-card dictionary"><div class="table-head"><div><h2>Data Dictionary</h2><p>ข้อมูลต้นฉบับ 9 ฟิลด์ · หน่วยเวลาคือวันปฏิทิน</p></div></div><div class="table-wrap"><table><thead><tr><th>ชื่อฟิลด์</th><th>ความหมาย</th><th>ชนิดข้อมูล</th><th>หน่วย / รูปแบบ</th><th>ตัวอย่าง</th></tr></thead><tbody>
+        <tr><td>รหัสการยืม</td><td>ตัวระบุรายการยืมหนึ่งรายการ</td><td>ข้อความ</td><td>รหัส (ไม่ซ้ำหลังเตรียมข้อมูล)</td><td>L001</td></tr>
+        <tr><td>รหัสผู้ยืม</td><td>ตัวระบุสมาชิกจำลอง</td><td>ข้อความ</td><td>รหัสผู้ยืม</td><td>S022</td></tr>
+        <tr><td>รหัสหนังสือ</td><td>ตัวระบุชื่อเรื่อง ไม่ใช่รหัสเล่ม</td><td>ข้อความ</td><td>รหัสชื่อเรื่อง</td><td>B004</td></tr>
+        <tr><td>ชื่อหนังสือ</td><td>ชื่อเรื่องของหนังสือที่ยืม</td><td>ข้อความ</td><td>ชื่อเรื่อง</td><td>ภาษาอังกฤษในชีวิตประจำวัน</td></tr>
+        <tr><td>หมวดหมู่</td><td>ประเภทของหนังสือ</td><td>ข้อความ</td><td>หมวดหมู่</td><td>ภาษา</td></tr>
+        <tr><td>วันที่ยืม</td><td>วันที่เริ่มยืม</td><td>วันที่</td><td>ค.ศ. YYYY-MM-DD</td><td>2026-09-28</td></tr>
+        <tr><td>กำหนดคืน</td><td>วันสุดท้ายที่คืนได้โดยไม่ล่าช้า</td><td>วันที่</td><td>ค.ศ. YYYY-MM-DD</td><td>2026-10-05</td></tr>
+        <tr><td>วันที่คืนจริง</td><td>วันที่นำหนังสือมาคืนจริง</td><td>วันที่ / ค่าว่าง</td><td>ค.ศ. YYYY-MM-DD</td><td>2026-10-11</td></tr>
+        <tr><td>สถานะการคืน</td><td>สถานะที่บันทึกในระบบต้นทาง</td><td>หมวดหมู่</td><td>คืนแล้ว / ยังไม่คืน</td><td>คืนแล้ว</td></tr>
+        </tbody></table></div></article>
+        <div class="info-grid" style="margin-top:14px"><article class="card info-card"><h2>นิยามตัวชี้วัด</h2><ul><li>คืนตรงเวลา: คืนแล้วและคืนไม่เกินกำหนด</li><li>คืนล่าช้า: วันที่คืนจริงเกินวันกำหนดคืน</li><li>ค้างเกินกำหนด: ยังไม่คืนและวันอ้างอิงเกินกำหนดคืน</li><li>วันยืมถึงคืน = วันที่คืนจริง − วันที่ยืม (ไม่บวกหนึ่ง)</li><li>วันล่าช้า / วันเกินกำหนดใช้ค่าสูงสุดระหว่าง 0 กับผลต่างวัน</li><li>ตัวหารเป็นศูนย์ แสดง “ไม่มีข้อมูล” ไม่แทนด้วย 0%</li></ul></article><article class="card info-card"><h2>แหล่งข้อมูลและวิธีทำซ้ำ</h2><p>ไฟล์ <code>assets/library_book_loans_dirty_150.csv</code> · เว็บไซต์โหลด CSV ตอนเริ่มใช้งานและคำนวณในเบราว์เซอร์ ไม่ต้องติดตั้งไลบรารีภายนอก</p><p>เปิด <code>launch.bat</code> เพื่อเริ่ม local web server แล้วเข้า http://127.0.0.1:8000</p></article></div>${footerScope(records)}`;
+    }
+    function render() {
+      if(!state.loaded) return;
+      const current=pages.find(p=>p.id===state.page)||pages[0];
+      $("#topTitle").textContent=current.label;
+      $("#navigation").innerHTML=navHTML;
+      $("#navigation").querySelectorAll("[data-page]").forEach(button=>button.classList.toggle("active",button.dataset.page===state.page));
+      const records=recordsFiltered();
+      $("#pageContent").innerHTML=pageContent(records);
+      bindPageActions();
+      $("#pageContent").scrollTop=0;
+    }
+    function csvCell(value) { const text=String(value??""); return `"${text.replace(/"/g,'""')}"`; }
+    function downloadCSV(filename, rows, headers, cells) {
+      const csv=[headers.map(csvCell).join(","),...rows.map(row=>cells(row).map(csvCell).join(","))].join("\r\n");
+      const blob=new Blob(["\uFEFF",csv],{type:"text/csv;charset=utf-8"});
+      const url=URL.createObjectURL(blob), a=document.createElement("a");
+      a.href=url; a.download=filename; document.body.append(a); a.click(); a.remove();
+      window.setTimeout(()=>URL.revokeObjectURL(url),1000);
+    }
+    function bindPageActions() {
+      $("#pageContent").querySelectorAll("[data-page-link]").forEach(button=>button.addEventListener("click",()=>changePage(button.dataset.pageLink)));
+      const start=$("#startDate"),end=$("#endDate"),category=$("#categoryFilter"),status=$("#statusFilter"),search=$("#searchFilter");
+      const updateFilters=()=>{state.start=start?.value||"";state.end=end?.value||"";state.category=category?.value||"";state.status=status?.value||"";state.search=search?.value.trim()||"";state.pageNum=1;render();};
+      [start,end,category,status].forEach(el=>el?.addEventListener("change",updateFilters));
+      search?.addEventListener("input",()=>{const cursor=search.selectionStart;state.search=search.value.trim();state.pageNum=1;render();const next=$("#searchFilter");next?.focus();next?.setSelectionRange(cursor,cursor);});
+      $("#clearFilters")?.addEventListener("click",()=>{state.start="";state.end="";state.category="";state.status="";state.search="";state.pageNum=1;render();});
+      $("#pageContent").querySelectorAll("th[data-sort]").forEach(th=>th.addEventListener("click",()=>{if(state.sort===th.dataset.sort)state.direction=state.direction==="asc"?"desc":"asc";else{state.sort=th.dataset.sort;state.direction="asc";}render();}));
+      $("#pageContent").querySelectorAll("[data-page-num]").forEach(button=>button.addEventListener("click",()=>{state.pageNum=Number(button.dataset.pageNum);render();}));
+      $("#exportButton")?.addEventListener("click",()=>{
+        let rows=recordsFiltered();
+        if(state.page==="overdue") rows=rows.filter(r=>r._group==="ค้างเกินกำหนด");
+        const headers=state.page==="overdue"?["รหัสการยืม","รหัสผู้ยืม","ชื่อหนังสือ","กำหนดคืน","วันเกินกำหนด"]:fields.concat(["กลุ่มสถานะคำนวณ","วันล่าช้า"]);
+        const cells=state.page==="overdue"?r=>[r[fields[0]],r[fields[1]],r[fields[3]],r[fields[6]],r._overdueDays]:r=>fields.map(f=>f===fields[4]?r._category:r[f]).concat([r._group,r._lateDays??""]);
+        downloadCSV(state.page==="overdue"?"overdue-loans.csv":"library-loans-filtered.csv",rows,headers,cells);
+      });
+      $("#exportQuality")?.addEventListener("click",()=>{
+        const entries=state.rows.flatMap(r=>r._issues.map(issue=>({record:r,issue})));
+        downloadCSV("data-quality-issues.csv",entries,["รหัสการยืม","บรรทัดต้นฉบับ","ปัญหา","แนวทางจัดการ"],entry=>[entry.record[fields[0]],entry.record._sourceLine,entry.issue.reason,entry.issue.action]);
+      });
+    }
+    function changePage(page) {
+      if(!pages.some(p=>p.id===page)) return;
+      state.page=page;state.pageNum=1;
+      $("#sidebar").classList.remove("open");
+      render();
+    }
+    $("#loginForm").addEventListener("submit",event=>{
+      event.preventDefault();
+      const name=$("#loginName").value.trim(),password=$("#loginPassword").value;
+      if(!name){$("#loginError").textContent="กรุณากรอกชื่อผู้ใช้งาน";return;}
+      if(password!=="12345"){$("#loginError").textContent="รหัสผ่านไม่ถูกต้อง กรุณาลองอีกครั้ง";$("#loginPassword").focus();return;}
+      $("#loginError").textContent="";
+      $("#userName").textContent=name;$("#userAvatar").textContent=[...name][0]||"U";
+      $("#loginScreen").classList.add("hidden");$("#appShell").classList.remove("hidden");
+      loadData();
+    });
+    $("#togglePassword").addEventListener("click",()=>{
+      const input=$("#loginPassword"),show=input.type==="password";
+      input.type=show?"text":"password";$("#togglePassword").textContent=show?"ซ่อน":"แสดง";
+    });
+    $("#logoutButton").addEventListener("click",()=>{
+      $("#appShell").classList.add("hidden");$("#loginScreen").classList.remove("hidden");
+      $("#loginPassword").value="";$("#loginError").textContent="";
+    });
+    $("#navigation").addEventListener("click",event=>{
+      const button=event.target.closest("[data-page]");
+      if(button) changePage(button.dataset.page);
+    });
+    $("#mobileMenu").addEventListener("click",()=>$("#sidebar").classList.toggle("open"));
+    document.addEventListener("click",event=>{
+      if(window.innerWidth<=760&&!event.target.closest("#sidebar")&&!event.target.closest("#mobileMenu"))$("#sidebar").classList.remove("open");
+    });
+    $("#navigation").innerHTML=navHTML;
+  })();
+  </script>
+</body>
+</html>
